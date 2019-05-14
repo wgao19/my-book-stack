@@ -1,6 +1,6 @@
 import React from "react";
-import BookList from "./components/BookList";
-import PushBook from "./components/PushBook";
+import BookList from "../BookList";
+import PushBook from "../PushBook";
 
 export default () => (
   <div>
