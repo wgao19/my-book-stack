@@ -78,7 +78,7 @@ A high-level summary of what is asked for, the motivation, and where and what to
 
 <!--TODO -->
 
-## References
+## Related
 
 - [Asking for required annotations](https://medium.com/flow-type/asking-for-required-annotations-64d4f9c1edf8) from 0.85.
-- `React.AbstractComponent`, `React.Config` from 0.89
+- `React.AbstractComponent`, `React.Config` from [0.89](https://github.com/facebook/flow/releases/tag/v0.89.0)
