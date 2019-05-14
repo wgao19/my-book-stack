@@ -2,7 +2,7 @@
 
 This repo is used to learn and explain about annotating higher order components with Flow after 0.89.
 
-**🚧 Note** This repo is currently under work in progress and will be updated frequently while this note is present. Questions and discussions are welcome via issues.
+**🚧 Note** This repo is currently under work in progress and will be updated frequently while this note is present. Most of the segments are either very sketchy or outline only. Questions and discussions are welcome via issues.
 
 ## Background
 
@@ -27,24 +27,56 @@ A high-level summary of what is asked for, the motivation, and where and what to
 | motivation | infer wrapped component prop types | type safety of component | correctly use component |
 | where to annotate | type generics | return position | n/a (inferred) |
 | what to annotate | injected props | component prop types | n/a (inferred) |
+| how | type generics for wrapped component, return component with injected props taken away | (wip) | no need to pass in |
 
 ### Input positions
 
+- What are input positions
+- What are required to annotate when:
+  - Putting `// @flow` on files of functional components
+  - Putting `// @flow` on files of class components
+  - Introducing React Redux's libdefs
+
 <!--TODO -->
 
-## Annotating components with hocs
+## Annotating the hoc
 
-<!--TODO -->
+- What the hoc knows: props it is injecting
+- What the hoc asks: props of the component it wraps around
+- So that: it can tell Flow the final props of the component the hoc returns
 
-### Using `React.Config`
+## Annotating components wrapped around by hocs
+
+- What exactly are the props
+- What Flow needs to know
+- What is the best place to annotate
 
 <!--TODO -->
 
 ### Connected components with React Redux
 
+- We normally don't annotate the `connect` hoc, we can use the libdef provided by Flow Typed
+  - Flow Typed is community maintained repo that contains Flow annotations for libraries
+  - Separated by library versions, React Redux is supported up to v5 (but v6+ has little public API changes)
+- How errors are reported makes it easy for us to try to annotate at function call with parameter type. But this will likely complicate the problem
+- Recommend annotating at return position
+
 <!--TODO -->
 
 ### Components wrapped with nested hocs
+
+- Do not try to annotate each layer of nested hocs, it is unnecessary and it complicates the problem
+
+<!--TODO -->
+
+### Using `React.Config`
+
+- Used to annotate default props without taking them off from required props
+- Using `React.Config` to annotate `withVariations`, a generic hoc that feeds in some props before component instantiation
+  - It is debatable whether this is a good practice or not, here is only to show that it is possible to properly annotate the process
+- Similar to TS's `optionalize`?
+
+<!--TODO -->
 
 ## References
 
