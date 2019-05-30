@@ -1,9 +1,12 @@
 // @flow
-import React from "react";
+import * as React from "react";
 import Book from "../Book";
 import { connect } from "react-redux";
 
-const MyBookList = ({ bookIds }) => (
+type BookListProps = { bookIds: number[] };
+type OwnProps = {};
+
+const MyBookList = ({ bookIds }: BookListProps) => (
   <ul>
     {!!bookIds &&
       !!bookIds.length &&
@@ -13,4 +16,4 @@ const MyBookList = ({ bookIds }) => (
 
 const mapState = state => ({ bookIds: state.allIds });
 
-export default connect(mapState)(MyBookList);
+export default connect<BookListProps, {}, _, _, _, _>(mapState)(MyBookList);
