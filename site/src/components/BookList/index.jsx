@@ -4,7 +4,6 @@ import Book from "../Book";
 import { connect } from "react-redux";
 
 type BookListProps = { bookIds: number[] };
-type OwnProps = {};
 
 const MyBookList = ({ bookIds }: BookListProps) => (
   <main>
