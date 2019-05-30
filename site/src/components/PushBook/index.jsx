@@ -1,16 +1,23 @@
 // @flow
-import React from "react";
+import * as React from "react";
 import { connect } from "react-redux";
 import { push } from "../../redux/actions";
 import s from "./s.module.css";
 
-class PushBook extends React.Component {
-  constructor(props) {
+type PushBookProps = {
+  push: typeof push
+};
+type OwnProps = {};
+type PushBookState = {
+  input: string
+};
+class PushBook extends React.Component<PushBookProps, PushBookState> {
+  constructor(props: PushBookProps) {
     super(props);
     this.state = { input: "" };
   }
 
-  updateInput = input => {
+  updateInput = (input: string) => {
     this.setState({ input });
   };
 
@@ -41,7 +48,7 @@ class PushBook extends React.Component {
   }
 }
 
-export default connect(
+export default connect<PushBookProps, OwnProps, _, _, _, _>(
   null,
   { push }
 )(PushBook);
