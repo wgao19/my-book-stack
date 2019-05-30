@@ -1,6 +1,27 @@
 .book {
   list-style: none;
 }
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Zilla Slab Semibold';
+}
 .status {
+  padding: 2px 4px;
+  margin-left: .5rem;
   cursor: pointer; 
+  font-size: .75rem;
+  font-family: 'Dank Mono';
+  color: white;
+  border-radius: 4px;
+}
+.status[data-status="WAITING"] {
+  background-color: red;
+}
+.status[data-status="READING"] {
+  background-color: blue;
+}
+.status[data-status="FINISHED"] {
+  background-color: green;
 }

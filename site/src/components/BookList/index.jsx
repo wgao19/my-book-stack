@@ -7,11 +7,11 @@ type BookListProps = { bookIds: number[] };
 type OwnProps = {};
 
 const MyBookList = ({ bookIds }: BookListProps) => (
-  <ul>
+  <main>
     {!!bookIds &&
       !!bookIds.length &&
       bookIds.map(bookId => <Book key={bookId} id={bookId} />)}
-  </ul>
+  </main>
 );
 
 const mapState = state => ({ bookIds: state.books.allIds });

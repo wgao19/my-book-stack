@@ -1,0 +1,7 @@
+.recommendedBook {
+  font-style: italic;
+  font-family: 'Zilla Slab Semibold';
+}
+.recommendedBook:not(:last-child)::after {
+  content: ', ';
+}
