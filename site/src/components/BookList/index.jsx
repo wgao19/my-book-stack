@@ -14,6 +14,6 @@ const MyBookList = ({ bookIds }: BookListProps) => (
   </ul>
 );
 
-const mapState = state => ({ bookIds: state.allIds });
+const mapState = state => ({ bookIds: state.books.allIds });
 
 export default connect<BookListProps, {}, _, _, _, _>(mapState)(MyBookList);

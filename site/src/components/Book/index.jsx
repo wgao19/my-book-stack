@@ -26,8 +26,8 @@ const Book = ({ id, title, status, toggleStatus }: BookProps) => (
 );
 
 const mapState = (state, { id }) => ({
-  title: state.byIds[id].title,
-  status: state.byIds[id].status
+  title: state.books.byIds[id].title,
+  status: state.books.byIds[id].status
 });
 
 const mapDispatch = { toggleStatus };
