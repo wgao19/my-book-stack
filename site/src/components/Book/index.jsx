@@ -1,11 +1,22 @@
 // @flow
 
-import React from "react";
+import * as React from "react";
 import { connect } from "react-redux";
 import { toggleStatus } from "../../redux/actions";
 import s from "./s.module.css";
 
-const Book = ({ id, title, status, toggleStatus }) => (
+type BookProps = {
+  id: number,
+  title: string,
+  status: string,
+  toggleStatus: typeof toggleStatus
+};
+
+type OwnProps = {
+  id: number
+};
+
+const Book = ({ id, title, status, toggleStatus }: BookProps) => (
   <li className={s.book}>
     {`${title}: `}
     <small onClick={() => toggleStatus(id)} className={s.status}>
@@ -21,7 +32,7 @@ const mapState = (state, { id }) => ({
 
 const mapDispatch = { toggleStatus };
 
-export default connect(
+export default connect<BookProps, OwnProps, _, _, _, _>(
   mapState,
   mapDispatch
 )(Book);
