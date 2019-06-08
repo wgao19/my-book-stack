@@ -13,7 +13,7 @@ type OwnProps = {
   id: number
 };
 
-const RecommendedBook = ({ id, title }: BookProps) => (
+const RecommendedBook = ({ id, title }: RecommendedBookProps) => (
   <span className={s.recommendedBook}>{title}</span>
 );
 

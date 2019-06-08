@@ -5,6 +5,7 @@ import RecommendedBook from "../RecommendedBook";
 import { connect } from "react-redux";
 import { toggleStatus } from "../../redux/actions";
 import withRecommendation from "../../hocs/withRecommendation";
+import type { withRecommendationProps } from "../../hocs/withRecommendation";
 import s from "./s.module.css";
 
 type BookProps = {
@@ -12,7 +13,7 @@ type BookProps = {
   title: string,
   status: string,
   toggleStatus: typeof toggleStatus
-};
+} & withRecommendationProps;
 
 type OwnProps = {
   id: number
@@ -54,7 +55,14 @@ const mapState = (state, { id }) => ({
 
 const mapDispatch = { toggleStatus };
 
-export default connect<BookProps, OwnProps, _, _, _, _>(
+export default connect<
+  $Diff<BookProps, withRecommendationProps>,
+  OwnProps,
+  _,
+  _,
+  _,
+  _
+>(
   mapState,
   mapDispatch
-)(withRecommendation(Book));
+)(withRecommendation<BookProps>(Book));
