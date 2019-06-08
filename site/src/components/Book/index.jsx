@@ -59,7 +59,14 @@ const mapState = (state, { id }) => ({
 
 const mapDispatch = { toggleStatus };
 
-export default connect(
+export default connect<
+  $Diff<BookProps, { recommendations: number[] }>,
+  OwnProps,
+  _,
+  _,
+  _,
+  _
+>(
   mapState,
   mapDispatch
-)(withRecommendation(Book));
+)(withRecommendation<BookProps>(Book));
