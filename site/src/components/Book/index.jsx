@@ -13,7 +13,9 @@ type BookProps = {
   title: string,
   status: string,
   toggleStatus: typeof toggleStatus
-} & withRecommendationProps;
+} & {
+  recommendations: number[]
+};
 
 type OwnProps = {
   id: number
@@ -24,7 +26,7 @@ const Book = ({
   title,
   status,
   toggleStatus,
-  recommendation
+  recommendations
 }: BookProps) => (
   <section className={s.book}>
     <h2 className={s.title}>
@@ -37,14 +39,16 @@ const Book = ({
         {status}
       </small>
     </h2>
-    {!!recommendation && !!recommendation.length && recommendation.length > 0 && (
-      <div>
-        <span>You may also like: </span>
-        {recommendation.map((id, idx) => (
-          <RecommendedBook id={id} key={idx} />
-        ))}
-      </div>
-    )}
+    {!!recommendations &&
+      !!recommendations.length &&
+      recommendations.length > 0 && (
+        <div>
+          <span>You may also like: </span>
+          {recommendations.map((id, idx) => (
+            <RecommendedBook id={id} key={idx} />
+          ))}
+        </div>
+      )}
   </section>
 );
 
