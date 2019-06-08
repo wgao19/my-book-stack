@@ -15,4 +15,4 @@ const MyBookList = ({ bookIds }: BookListProps) => (
 
 const mapState = state => ({ bookIds: state.books.allIds });
 
-export default connect<BookListProps, {}, _, _, _, _>(mapState)(MyBookList);
+export default connect(mapState)(MyBookList);

@@ -48,7 +48,7 @@ class PushBook extends React.Component<PushBookProps, PushBookState> {
   }
 }
 
-export default connect<PushBookProps, OwnProps, _, _, _, _>(
+export default connect(
   null,
   { push }
 )(PushBook);

@@ -21,6 +21,4 @@ const mapState = (state, { id }) => ({
   title: state.books.byIds[id].title
 });
 
-export default connect<RecommendedBookProps, OwnProps, _, _, _, _>(mapState)(
-  RecommendedBook
-);
+export default connect(mapState)(RecommendedBook);
