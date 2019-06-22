@@ -2,84 +2,175 @@
 
 This repo is used to learn and explain about annotating higher order components with Flow after 0.89.
 
-**🚧 Note** This repo is currently under work in progress and will be updated frequently while this note is present. Most of the segments are either very sketchy or outline only. Questions and discussions are welcome via issues.
+# Annotating Connected Components with Flow
 
-## Background
+After Flow 0.85, Flow starts [Asking for Required Annotations](https://medium.com/flow-type/asking-for-required-annotations-64d4f9c1edf8) on implicit calls of higher order components within each file import — export cycle. This facilitates Flow to merge type information from file dependencies _before_ it walks the type structure and conducts type inference.
 
-In 0.85, Flow released a major fix in their typecheck cycle that caused many new errors, mainly around type inference that spans over a file import-export cycle.
+This helps Flow gain significantly better coverage on higher order components. But it also asks that we explicitly annotate the connected components at file exports. Exporting implicit calls of `connect` will raise error:
 
-Consequently, a lot of annotations on components that are wrapped around by hocs are broken. One major victims are connected components with React Redux.
+    Missing type annotation for OP. OP is a type parameter declared in function type [1] and was implicitly
+    instantiated at call of connect [2].
 
-In 0.89, Flow released a couple of new features to help annotating higher order components. With `React.AbstractComponent` and `React.Config`, we can annotate hocs more easily and declaratively.
+In general, to make Flow happy with connect after 0.85 is a two-phase fix. First, you need to explicitly annotate each connected components at file exports. This shall clear all the “implicitly instantiated” errors. Then, if your codebase contains mismatched types between component definitions and usages, Flow will report those errors after you fix the implicit instantiation errors.
 
-This repo serves as a playground (since Flow Try does not provide an environment for cross-file use cases) as well as an exploration on how to properly annotate higher order components with Flow after 0.89.
+## Fixing the “implicitly instantiated” errors at calls of `connect`
 
-<!--TODO -->
+To begin, you need:
 
-## Understanding
+- Flow upgraded to v0.89+
+- [Newest Flow Typed library definition for React Redux](https://github.com/flow-typed/flow-typed/blob/master/definitions/npm/react-redux_v5.x.x/flow_v0.89.x-/react-redux_v5.x.x.js)
 
-<!--TODO -->
+We include three major use cases for annotating `connect` with Flow:
 
-A high-level summary of what is asked for, the motivation, and where and what to annotate at each step.
+- Connecting stateless component with `mapStateToProps`
+- Connecting components with `mapDispatchToProps` of action creators
+- Connecting components with `mapStateToProps` and `mapDispatchToProps` of action creators
 
-|  | hoc definition | component definition | component instantiation |
-| --- | --- | --- | --- |
-| motivation | infer wrapped component prop types | type safety of component | correctly use component |
-| where to annotate | type generics | return position | n/a (inferred) |
-| what to annotate | injected props | component prop types | n/a (inferred) |
-| how | type generics for wrapped component, return component with injected props taken away | (wip) | no need to pass in |
+### Connecting stateless component with `mapStateToProps`
 
-### Input positions
+```jsx
+type OwnProps = {|
+  passthrough: number,
+  forMapStateToProps: string,
+|};
+type Props = {
+  ...OwnProps,
+  fromStateToProps: string
+};
+const Com = (props: Props) => <div>{props.passthrough} {props.fromStateToProps}</div>
 
-- What are input positions
-- What are required to annotate when:
-  - Putting `// @flow` on files of functional components
-  - Putting `// @flow` on files of class components
-  - Introducing React Redux's libdefs
+type State = {a: number};
+type InputProps = {
+  forMapStateToProps: string
+};
+const mapStateToProps = (state: State, props: InputProps) => {
+  return {
+    fromStateToProps: 'str' + state.a
+  }
+};
 
-<!--TODO -->
+const Connected = connect<Props, OwnProps, _,_,_,_>(mapStateToProps)(Com);
+```
 
-## Annotating the hoc
+### Connecting components with `mapDispatchToProps` of action creators
 
-- What the hoc knows: props it is injecting
-- What the hoc asks: props of the component it wraps around
-- So that: it can tell Flow the final props of the component the hoc returns
+```jsx
+type OwnProps = {|
+  passthrough: number,
+|};
+type Props = {
+  ...OwnProps,
+  dispatch1: (num: number) => void,
+  dispatch2: () => void
+};
+class Com extends React.Component<Props> {
+  render() {
+    return <div>{this.props.passthrough}</div>;
+  }
+}
 
-## Annotating components wrapped around by hocs
+const mapDispatchToProps = {
+  dispatch1: (num: number) => {},
+  dispatch2: () => {}
+};
+const Connected = connect<Props, OwnProps, _, _, _, _>(null, mapDispatchToProps)(Com);
+e.push(Connected);
+<Connected passthrough={123} />;
+```
 
-- What exactly are the props
-- What Flow needs to know
-- What is the best place to annotate
+### Connecting components with `mapStateToProps` and `mapDispatchToProps` of action creators
 
-<!--TODO -->
+```jsx
+type OwnProps = {|
+  passthrough: number,
+  forMapStateToProps: string
+|};
+type Props = {
+  ...OwnProps,
+  dispatch1: () => void,
+  dispatch2: () => void,
+  fromMapStateToProps: number
+};
+class Com extends React.Component<Props> {
+  render() {
+    return <div>{this.props.passthrough}</div>;
+  }
+}
+type State = {a: number}
+type MapStateToPropsProps = {forMapStateToProps: string}
+const mapStateToProps = (state: State, props: MapStateToPropsProps) => {
+  return {
+    fromMapStateToProps: state.a
+  }
+}
+const mapDispatchToProps = {
+  dispatch1: () => {},
+  dispatch2: () => {}
+};
+const Connected = connect<Props, OwnProps, _, _, _, _>(mapStateToProps, mapDispatchToProps)(Com);
+```
 
-### Connected components with React Redux
+## Annotating nested higher order components with connect
 
-- We normally don't annotate the `connect` hoc, we can use the libdef provided by Flow Typed
-  - Flow Typed is community maintained repo that contains Flow annotations for libraries
-  - Separated by library versions, React Redux is supported up to v5 (but v6+ has little public API changes)
-- How errors are reported makes it easy for us to try to annotate at function call with parameter type. But this will likely complicate the problem
-- Recommend annotating at return position
+If you are at the unfortunate position where your component is wrapped with nested higher order component, it is probably more difficult to annotate by providing explicit type parameters, as doing so will probably require that you tediously take away props at each layer. It will be easier to annotate at function return:
 
-<!--TODO -->
+```jsx
+type OwnProps = {|  // spreaded props should be exact
+  passthrough: number,
+  forMapStateToProps: string,
+|}
+type Props = {
+  ...OwnProps,
+  injectedA: string,
+  injectedB: string,
+  fromMapStateToProps: string,
+  dispatch1: (number) => void,
+  dispatch2: () => void,
+}
 
-### Components wrapped with nested hocs
+const Component = (props: Props) => { // annotate the component with all props including injected props
+  /** ... */
+}
 
-- Do not try to annotate each layer of nested hocs, it is unnecessary and it complicates the problem
+const mapStateToProps = (state: State, ownProps: OwnProps) => {
+  return { fromMapStateToProps: 'str' + ownProps.forMapStateToProps },
+}
+const mapDispatchToProps = {
+  dispatch1: number => {},
+  dispatch2: () => {},
+}
 
-<!--TODO -->
+export default (compose(
+  connect(mapStateToProps, mapDispatchToProps),
+  withA,
+  withB,
+)(Component): React.AbstractComponent<OwnProps>)  // export the connected component without injected props
+```
 
-### Using `React.Config`
+## Benefits of this version
 
-- Used to annotate default props without taking them off from required props
-- Using `React.Config` to annotate `withVariations`, a generic hoc that feeds in some props before component instantiation
-  - It is debatable whether this is a good practice or not, here is only to show that it is possible to properly annotate the process
-- Similar to TS's `optionalize`?
+After fixing the implicit instantiation errors, if your code contains mismatched types between connected components, the total number of errors may go _up_. This is the result of Flow's improved coverage. If you are using console output for the Flow errors, you may not be able to see those errors until you clear other errors. These additional errors are grouped together, all tied back to React Redux's library definition, and have friendly error messages that will pin point you to the lines of code to the errors.
 
-<!--TODO -->
+![](https://i.imgur.com/mt79yaC.png)
 
-## Related
+## References
 
-- [Asking for required annotations](https://medium.com/flow-type/asking-for-required-annotations-64d4f9c1edf8) from 0.85.
-- `React.AbstractComponent`, `React.Config` from [0.89](https://github.com/facebook/flow/releases/tag/v0.89.0)
-- [HOC Cheatsheet](https://github.com/typescript-cheatsheets/react-typescript-cheatsheet/blob/master/HOC.md) from [React TypeScript Cheatsheet](https://github.com/typescript-cheatsheets/react-typescript-cheatsheet)
+Article
+
+- [Asking for Required Annotations](https://medium.com/flow-type/asking-for-required-annotations-64d4f9c1edf8)
+
+Migration guides
+
+- [Ville's and Jordan Brown's guide: _Adding Type Parameters to Connect_](https://gist.github.com/jbrown215/f425203ef30fdc8a28c213b90ba7a794)
+- [Quick Note Fixing `connect` FlowType Annotation after 0.89](https://dev.to/wgao19/quick-note-fixing-connect-flowtype-annotation-after-089-joi)
+- [Flow Typed tests for React Redux `connect`](https://github.com/flow-typed/flow-typed/blob/master/definitions/npm/react-redux_v5.x.x/flow_v0.89.x-/test_connect.js)
+
+Talk
+
+- [Flow Be Happy](https://engineers.sg/video/flow-be-happy-reactjs-singapore--3419) A talk on migrating Flow past 0.85
+
+Others
+
+- [flow-typed/#2946: Discussion after 0.85](https://github.com/flow-typed/flow-typed/issues/2946)
+- Add support for Flow 0.89+: [#3012](https://github.com/flow-typed/flow-typed/pull/3035), [#3035](https://github.com/flow-typed/flow-typed/pull/3035)
+- [What's `_`?](https://github.com/facebook/flow/commit/ec70da4510d3a092fa933081c083bd0e513d0518)
